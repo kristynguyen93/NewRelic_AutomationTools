@@ -1,22 +1,29 @@
 import requests
 import csv
+import logging
 from datetime import date
+from shared import CsvFunctions as csv
 from shared import NerdGraph
 
+logging.basicConfig(filename='logs.log', level=logging.INFO)
 
-def entities_filename():
-    file_name = "missing_entities_deployment-"+str(date.today())+".csv"
+
+def get_entities_filename():
+    file_name = csv.output_files() + "missing_entities_deployment-"+str(date.today())+".csv"
 
     return file_name
+
 
 def find_all_entities():
 
     all_entities_list = []
 
-    graphql_query = '''
+    next_cursor = None
+
+    graphql_query = """
         {
           actor {
-            entitySearch(query: "domain ='APM' AND accountId = ''' + NerdGraph.accountId + '''") {
+            entitySearch(query: "domain ='APM' AND accountId = %s") {
               count
               query
               results {
@@ -31,11 +38,11 @@ def find_all_entities():
             }
           }
         }
-    '''
+    """ % (NerdGraph.accountId)
+
 
     response = requests.post(NerdGraph.graphql_url, headers=NerdGraph.headers, json={'query': graphql_query})
     response_json = response.json()
-
     next_cursor = response_json["data"]["actor"]["entitySearch"]["results"]["nextCursor"]
     result_entities = response_json["data"]["actor"]["entitySearch"]["results"]["entities"]
 
@@ -46,10 +53,10 @@ def find_all_entities():
         all_entities_list.append({"entity_name": entity_name, "entity_guid": entity_guid})
 
     while next_cursor is not None:
-        graphql_query = '''
+        graphql_query = """
             {
               actor {
-                entitySearch(query: "domain ='APM' AND accountId = ''' + NerdGraph.accountId + '''") {
+                entitySearch(query: "domain ='APM' AND accountId = %s") {
                   count
                   query
                   results(cursor: "''' + next_cursor + '''") {
@@ -64,7 +71,7 @@ def find_all_entities():
                 }
               }
             }
-        '''
+        """ % (NerdGraph.accountId)
 
         response = requests.post(NerdGraph.graphql_url, headers=NerdGraph.headers, json={'query': graphql_query})
         response_json = response.json()
@@ -80,41 +87,42 @@ def find_all_entities():
 
     return all_entities_list
 
+
 def find_deployment_entities():
 
-    graphql_query = '''
-        {
+    query_variables = {
+        "account_id": NerdGraph.accountId
+    }
+
+    graphql_query = """
+        query ($account_id:Int!) {
           actor {
             nrql(
               query: "SELECT uniques(entity.guid) FROM Deployment SINCE 1 MONTH AGO"
-              accounts: ''' + NerdGraph.accountId + '''
+              accounts: $account_id
             ) {
               results
             }
           }
         }
-    '''
+    """
 
-    response = requests.post(NerdGraph.graphql_url, headers=NerdGraph.headers, json={'query': graphql_query})
+    response = requests.post(NerdGraph.graphql_url, headers=NerdGraph.headers, json={'query': graphql_query, 'variables': query_variables})
     response_json = response.json()
 
     deployment_entities = response_json["data"]["actor"]["nrql"]["results"][0]["uniques.entity.guid"]
 
     return deployment_entities
 
+
 def find_entities_not_reporting_deployment():
 
     all_entities_list = find_all_entities()
     deployment_entities = find_deployment_entities()
-
-    print(len(all_entities_list))
-    print(len(deployment_entities))
-
     entities_not_reporting_list = []
 
     for entity in all_entities_list:
         if entity["entity_guid"] not in deployment_entities:
-            print(entity["entity_guid"])
             entities_not_reporting_list.append(entity["entity_guid"])
 
     result_list = []
@@ -124,14 +132,7 @@ def find_entities_not_reporting_deployment():
             if entity["entity_guid"] == entity_guid:
                 result_list.append(entity)
 
-    print(result_list)
-    print(len(result_list))
+    file_name = get_entities_filename()
 
-    with open(entities_filename(), 'w', newline='') as csvfile:
-        writer = csv.DictWriter(csvfile, fieldnames=result_list[0].keys())
-        writer.writeheader()
-        writer.writerows(result_list)
-
-
-
-# find_entities_not_reporting_deployment()
+    logging.info("Writing entities not reporting deployment report to CSV file.")
+    csv.write_list_of_dicts_to_csv(result_list, file_name)

@@ -1,16 +1,51 @@
-# This is a sample Python script.
+import find_entities_not_reporting_deployments.find_entities_not_reporting_deployments as find_entities_not_reporting_deployments
+import policies_and_conditions_report.policies_and_conditions_report as policies_and_conditions_report
 
-# Press ⌃R to execute it or replace it with your code.
-# Press Double ⇧ to search everywhere for classes, files, tool windows, actions, and settings.
+def main():
+    choice = 0
+    menu_options = {
+        1: "Find Entities Not Reporting Deployments",
+        2: "Policies and Conditions Report",
+        3: "Exit"
+    }
 
+    for option in menu_options:
+        print(f"{option}: {menu_options[option]}")
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press ⌘F8 to toggle the breakpoint.
+    while choice != 3:
+        choice = input("Enter your choice: ")
 
+        try:
+            choice = int(choice)
+            if choice == 1:
 
-# Press the green button in the gutter to run the script.
+                print("Generating Entities Not Reporting Deployments report... \n See logs.log for details.")
+
+                find_entities_not_reporting_deployments.find_entities_not_reporting_deployment()
+
+                file_name = find_entities_not_reporting_deployments.get_entities_filename()
+
+                print("Report generated. See reports " + file_name + " in the output folder.")
+
+            elif choice == 2:
+
+                print("Generating policies and conditions report... \n See logs.log for details.")
+
+                policies_and_conditions_report.generate_policies_conditions_report()
+
+                policies_and_conditions_report_filename, invalid_policies_report_filename, empty_policies_report_filename = policies_and_conditions_report.get_report_file_names()
+
+                print("Report generated. See reports " + policies_and_conditions_report_filename, invalid_policies_report_filename, empty_policies_report_filename + " in the output folder.")
+
+            elif choice > 3:
+                print("Please enter a valid choice.")
+
+            elif choice == 3:
+                print("Exiting application.")
+                break
+
+        except ValueError:
+            print("Please enter a valid choice.")
+
 if __name__ == '__main__':
-    print_hi('PyCharm')
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+    main()

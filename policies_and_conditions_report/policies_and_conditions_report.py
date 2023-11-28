@@ -15,9 +15,15 @@ from datetime import date
 import shared.CsvFunctions as csv
 import shared.NerdGraph as NerdGraph
 
-policies_and_conditions_report_filename = csv.output_files() + os.path.basename(__file__)[:-3] + "/" + "policies_and_conditions_report-"+str(date.today())+".csv"
-invalid_policies_report_filename = csv.output_files() + os.path.basename(__file__)[:-3] + "/" + "invalid_policies_report-"+str(date.today())+".csv"
-empty_policies_report_filename =  csv.output_files() + os.path.basename(__file__)[:-3] + "/" + "empty_policies_report-"+str(date.today())+".csv"
+logging.basicConfig(filename='logs.log', level=logging.INFO)
+
+def get_report_file_names():
+
+    policies_and_conditions_report_filename = csv.output_files() + "policies_and_conditions_report-"+str(date.today())+".csv"
+    invalid_policies_report_filename = csv.output_files() + "invalid_policies_report-"+str(date.today())+".csv"
+    empty_policies_report_filename =  csv.output_files() + "empty_policies_report-"+str(date.today())+".csv"
+
+    return policies_and_conditions_report_filename, invalid_policies_report_filename, empty_policies_report_filename
 
 
 def get_all_policies():
@@ -229,9 +235,9 @@ def generate_policies_conditions_report():
             for policy in temp_empty_policies_list:
                 empty_policies_report.append(policy)
 
+    policies_and_conditions_report_filename, invalid_policies_report_filename, empty_policies_report_filename = get_report_file_names()
+
     logging.info("Writing policies and conditions report to CSV file.")
     csv.write_list_of_dicts_to_csv(policies_and_conditions_report, policies_and_conditions_report_filename)
     csv.write_list_of_dicts_to_csv(invalid_policies_report, invalid_policies_report_filename)
     csv.write_list_of_dicts_to_csv(empty_policies_report, empty_policies_report_filename)
-
-generate_policies_conditions_report()
