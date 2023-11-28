@@ -1,18 +1,8 @@
 import requests
 import csv
 from datetime import date
+from shared import NerdGraph
 
-
-
-# accountId and user api_key can be updated
-
-accountId = "967232"
-api_key =  "NRAK-GAQGNZ29C2H7G5HBT4636J3HZY9"
-graphql_url = 'https://api.newrelic.com/graphql'
-headers = {
-    'Content-Type': 'application/json',
-    'API-Key': api_key
-}
 
 def entities_filename():
     file_name = "missing_entities_deployment-"+str(date.today())+".csv"
@@ -26,7 +16,7 @@ def find_all_entities():
     graphql_query = '''
         {
           actor {
-            entitySearch(query: "domain ='APM' AND accountId = ''' + accountId + '''") {
+            entitySearch(query: "domain ='APM' AND accountId = ''' + NerdGraph.accountId + '''") {
               count
               query
               results {
@@ -43,7 +33,7 @@ def find_all_entities():
         }
     '''
 
-    response = requests.post(graphql_url, headers=headers, json={'query': graphql_query})
+    response = requests.post(NerdGraph.graphql_url, headers=NerdGraph.headers, json={'query': graphql_query})
     response_json = response.json()
 
     next_cursor = response_json["data"]["actor"]["entitySearch"]["results"]["nextCursor"]
@@ -59,7 +49,7 @@ def find_all_entities():
         graphql_query = '''
             {
               actor {
-                entitySearch(query: "domain ='APM' AND accountId = ''' + accountId + '''") {
+                entitySearch(query: "domain ='APM' AND accountId = ''' + NerdGraph.accountId + '''") {
                   count
                   query
                   results(cursor: "''' + next_cursor + '''") {
@@ -76,7 +66,7 @@ def find_all_entities():
             }
         '''
 
-        response = requests.post(graphql_url, headers=headers, json={'query': graphql_query})
+        response = requests.post(NerdGraph.graphql_url, headers=NerdGraph.headers, json={'query': graphql_query})
         response_json = response.json()
 
         next_cursor = response_json["data"]["actor"]["entitySearch"]["results"]["nextCursor"]
@@ -97,7 +87,7 @@ def find_deployment_entities():
           actor {
             nrql(
               query: "SELECT uniques(entity.guid) FROM Deployment SINCE 1 MONTH AGO"
-              accounts: ''' + accountId + '''
+              accounts: ''' + NerdGraph.accountId + '''
             ) {
               results
             }
@@ -105,7 +95,7 @@ def find_deployment_entities():
         }
     '''
 
-    response = requests.post(graphql_url, headers=headers, json={'query': graphql_query})
+    response = requests.post(NerdGraph.graphql_url, headers=NerdGraph.headers, json={'query': graphql_query})
     response_json = response.json()
 
     deployment_entities = response_json["data"]["actor"]["nrql"]["results"][0]["uniques.entity.guid"]

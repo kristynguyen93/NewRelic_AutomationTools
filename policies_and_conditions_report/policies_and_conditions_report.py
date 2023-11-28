@@ -12,7 +12,6 @@ import os
 import logging
 import requests
 from datetime import date
-from dotenv import load_dotenv
 import shared.CsvFunctions as csv
 import shared.NerdGraph as NerdGraph
 
