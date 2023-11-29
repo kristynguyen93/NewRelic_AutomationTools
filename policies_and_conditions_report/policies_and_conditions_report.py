@@ -55,6 +55,10 @@ def get_all_policies():
                 """
     response = requests.post(NerdGraph.graphql_url, headers=NerdGraph.headers, json={'query': graphql_query, 'variables': query_variables})
     response_json = response.json()
+    if response_json["errors"]:
+        logging.error("Error retrieving all policies: " + str(response_json["errors"]))
+        print("Error retrieving all policies. See logs.log for details.")
+        exit()
     next_cursor = response_json["data"]["actor"]["account"]["alerts"]["policiesSearch"]["nextCursor"]
     result_policies = response_json["data"]["actor"]["account"]["alerts"]["policiesSearch"]["policies"]
 
@@ -87,6 +91,10 @@ def get_all_policies():
 
         response = requests.post(NerdGraph.graphql_url, headers=NerdGraph.headers, json={'query': graphql_query, 'variables': query_variables})
         response_json = response.json()
+        if response_json["errors"]:
+            logging.error("Error retrieving all policies: " + str(response_json["errors"]))
+            print("Error retrieving all policies. See logs.log for details.")
+            exit()
         next_cursor = response_json["data"]["actor"]["account"]["alerts"]["policiesSearch"]["nextCursor"]
         result_policies = response_json["data"]["actor"]["account"]["alerts"]["policiesSearch"]["policies"]
 
@@ -136,6 +144,10 @@ def get_policy_conditions(policy_id, policy_name):
         """
     response = requests.post(NerdGraph.graphql_url, headers=NerdGraph.headers, json={'query': graphql_query, 'variables': query_variables})
     response_json = response.json()
+    if response_json["errors"]:
+        logging.error("Error retrieving all policies: " + str(response_json["errors"]))
+        print("Error retrieving all policies. See logs.log for details.")
+        exit()
     if response_json["data"]["actor"]["account"]["alerts"]["nrqlConditionsSearch"] is not None:
         next_cursor = response_json["data"]["actor"]["account"]["alerts"]["nrqlConditionsSearch"]["nextCursor"]
         if not response_json["data"]["actor"]["account"]["alerts"]["nrqlConditionsSearch"]["nrqlConditions"]:
@@ -185,6 +197,10 @@ def get_policy_conditions(policy_id, policy_name):
 
         response = requests.post(NerdGraph.graphql_url, headers=NerdGraph.headers, json={'query': graphql_query, 'variables': query_variables})
         response_json = response.json()
+        if response_json["errors"]:
+            logging.error("Error retrieving all policies: " + str(response_json["errors"]))
+            print("Error retrieving all policies. See logs.log for details.")
+            exit()
         if response_json["data"]["actor"]["account"]["alerts"]["nrqlConditionsSearch"] is not None:
             next_cursor = response_json["data"]["actor"]["account"]["alerts"]["nrqlConditionsSearch"]["nextCursor"]
             if not response_json["data"]["actor"]["account"]["alerts"]["nrqlConditionsSearch"]["nrqlConditions"]:
