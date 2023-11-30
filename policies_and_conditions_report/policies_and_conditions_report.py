@@ -55,8 +55,8 @@ def get_all_policies():
                 """
     response = requests.post(NerdGraph.graphql_url, headers=NerdGraph.headers, json={'query': graphql_query, 'variables': query_variables})
     response_json = response.json()
-    if response_json["errors"]:
-        logging.error("Error retrieving all policies: " + str(response_json["errors"]))
+    if 'errors' in response_json:
+        logging.error("NERDGRAPH ERROR: " + str(response_json["errors"]))
         print("Error retrieving all policies. See logs.log for details.")
         exit()
     next_cursor = response_json["data"]["actor"]["account"]["alerts"]["policiesSearch"]["nextCursor"]
@@ -91,8 +91,8 @@ def get_all_policies():
 
         response = requests.post(NerdGraph.graphql_url, headers=NerdGraph.headers, json={'query': graphql_query, 'variables': query_variables})
         response_json = response.json()
-        if response_json["errors"]:
-            logging.error("Error retrieving all policies: " + str(response_json["errors"]))
+        if 'errors' in response_json:
+            logging.error("NERDGRAPH ERROR: " + str(response_json["errors"]))
             print("Error retrieving all policies. See logs.log for details.")
             exit()
         next_cursor = response_json["data"]["actor"]["account"]["alerts"]["policiesSearch"]["nextCursor"]
@@ -144,8 +144,8 @@ def get_policy_conditions(policy_id, policy_name):
         """
     response = requests.post(NerdGraph.graphql_url, headers=NerdGraph.headers, json={'query': graphql_query, 'variables': query_variables})
     response_json = response.json()
-    if response_json["errors"]:
-        logging.error("Error retrieving all policies: " + str(response_json["errors"]))
+    if 'errors' in response_json:
+        logging.error("NERDGRAPH ERROR: " + str(response_json["errors"]))
         print("Error retrieving all policies. See logs.log for details.")
         exit()
     if response_json["data"]["actor"]["account"]["alerts"]["nrqlConditionsSearch"] is not None:
@@ -197,8 +197,8 @@ def get_policy_conditions(policy_id, policy_name):
 
         response = requests.post(NerdGraph.graphql_url, headers=NerdGraph.headers, json={'query': graphql_query, 'variables': query_variables})
         response_json = response.json()
-        if response_json["errors"]:
-            logging.error("Error retrieving all policies: " + str(response_json["errors"]))
+        if 'errors' in response_json:
+            logging.error("NERDGRAPH ERROR: " + str(response_json["errors"]))
             print("Error retrieving all policies. See logs.log for details.")
             exit()
         if response_json["data"]["actor"]["account"]["alerts"]["nrqlConditionsSearch"] is not None:
@@ -254,6 +254,22 @@ def generate_policies_conditions_report():
     policies_and_conditions_report_filename, invalid_policies_report_filename, empty_policies_report_filename = get_report_file_names()
 
     logging.info("Writing policies and conditions report to CSV file.")
-    csv.write_list_of_dicts_to_csv(policies_and_conditions_report, policies_and_conditions_report_filename)
-    csv.write_list_of_dicts_to_csv(invalid_policies_report, invalid_policies_report_filename)
-    csv.write_list_of_dicts_to_csv(empty_policies_report, empty_policies_report_filename)
+
+    if policies_and_conditions_report is not None:
+        csv.write_list_of_dicts_to_csv(policies_and_conditions_report, policies_and_conditions_report_filename)
+        print("Report generated. See reports " + policies_and_conditions_report_filename + " in the output folder.")
+        logging.info("Report generated. See reports " + policies_and_conditions_report_filename + " in the output folder.")
+    else:
+        logging.info("No policies and conditions to report.")
+    if invalid_policies_report is not None:
+        csv.write_list_of_dicts_to_csv(invalid_policies_report, invalid_policies_report_filename)
+        print("Report generated. See reports " + invalid_policies_report_filename + " in the output folder.")
+        logging.info("Report generated. See reports " + invalid_policies_report_filename + " in the output folder.")
+    else:
+        logging.info("No invalid policies to report.")
+    if empty_policies_report is not None:
+        csv.write_list_of_dicts_to_csv(empty_policies_report, empty_policies_report_filename)
+        print("Report generated. See reports " + empty_policies_report_filename + " in the output folder.")
+        logging.info("Report generated. See reports " + empty_policies_report_filename + " in the output folder.")
+    else:
+        logging.info("No empty policies to report.")
