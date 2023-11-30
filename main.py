@@ -1,5 +1,10 @@
+from dotenv import load_dotenv
+
 import find_entities_not_reporting_deployments.find_entities_not_reporting_deployments as find_entities_not_reporting_deployments
 import policies_and_conditions_report.policies_and_conditions_report as policies_and_conditions_report
+from dotenv import load_dotenv
+
+load_dotenv()  # Load environment variables from .env file
 
 def main():
     choice = 0
@@ -35,8 +40,6 @@ def main():
 
                 policies_and_conditions_report_filename, invalid_policies_report_filename, empty_policies_report_filename = policies_and_conditions_report.get_report_file_names()
 
-                print("Report generated. See reports " + policies_and_conditions_report_filename, invalid_policies_report_filename, empty_policies_report_filename + " in the output folder.")
-
             elif choice > 3:
                 print("Please enter a valid choice.")
 
@@ -46,6 +49,7 @@ def main():
 
         except ValueError:
             print("Please enter a valid choice.")
+
 
 if __name__ == '__main__':
     main()
