@@ -238,38 +238,41 @@ def generate_policies_conditions_report():
     for policy in all_policies_list:
         temp_conditions_list, temp_invalid_policies_list, temp_empty_policies_list = get_policy_conditions(policy["policy_id"], policy["policy_name"])
 
-        if temp_conditions_list is not None:
+        if temp_conditions_list:
             for condition in temp_conditions_list:
                 policies_and_conditions_report.append(condition)
 
-        if temp_invalid_policies_list is not None:
-            for policy in temp_invalid_policies_list:
-                invalid_policies_report.append(policy)
+        if temp_invalid_policies_list:
+            for temp_policy in temp_invalid_policies_list:
+                invalid_policies_report.append(temp_policy)
 
-
-        if temp_empty_policies_list is not None:
-            for policy in temp_empty_policies_list:
-                empty_policies_report.append(policy)
+        if temp_empty_policies_list:
+            for temp_policy in temp_empty_policies_list:
+                empty_policies_report.append(temp_policy)
 
     policies_and_conditions_report_filename, invalid_policies_report_filename, empty_policies_report_filename = get_report_file_names()
 
+    print(policies_and_conditions_report)
+    print("invalid:",invalid_policies_report)
+    print("empty:", empty_policies_report)
+
     logging.info("Writing policies and conditions report to CSV file.")
 
-    if policies_and_conditions_report is not None:
+    if policies_and_conditions_report:
         csv.write_list_of_dicts_to_csv(policies_and_conditions_report, policies_and_conditions_report_filename)
-        print("Report generated. See reports " + policies_and_conditions_report_filename + " in the output folder.")
+        print("All policies and conditions report generated. See reports " + policies_and_conditions_report_filename + " in the output folder.")
         logging.info("Report generated. See reports " + policies_and_conditions_report_filename + " in the output folder.")
     else:
         logging.info("No policies and conditions to report.")
-    if invalid_policies_report is not None:
+    if invalid_policies_report:
         csv.write_list_of_dicts_to_csv(invalid_policies_report, invalid_policies_report_filename)
-        print("Report generated. See reports " + invalid_policies_report_filename + " in the output folder.")
+        print("Invalid policies report generated. See reports " + invalid_policies_report_filename + " in the output folder.")
         logging.info("Report generated. See reports " + invalid_policies_report_filename + " in the output folder.")
     else:
         logging.info("No invalid policies to report.")
-    if empty_policies_report is not None:
+    if empty_policies_report:
         csv.write_list_of_dicts_to_csv(empty_policies_report, empty_policies_report_filename)
-        print("Report generated. See reports " + empty_policies_report_filename + " in the output folder.")
+        print("Empty policies report generated. See reports " + empty_policies_report_filename + " in the output folder.")
         logging.info("Report generated. See reports " + empty_policies_report_filename + " in the output folder.")
     else:
         logging.info("No empty policies to report.")
